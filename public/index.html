@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <link rel="shortcut icon" href="./icons/geli.ico" type="image/x-icon">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monster Hunter Wilds - Crown Tracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.3.4/css/dataTables.dataTables.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+        body {
+            font-family: "Roboto", sans-serif;
+        }
+
+        /* Transizione fluida e cursore */
+        #monsterTable tbody tr {
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        }
+
+        /* Hover con !important e maggiore specificità */
+        #monsterTable tbody tr:hover td {
+            background-color: hsla(210, 11%, 14%, 0.15) !important;
+        }
+
+        @media (max-width: 768px) {
+
+            #monsterTable td,
+            #monsterTable th {
+                padding: 0.3rem;
+                font-size: 0.75rem;
+            }
+
+            #monsterTable img {
+                height: 25px;
+                width: 25px;
+            }
+
+            div.dataTables_length,
+            div.dataTables_filter {
+                width: 100% !important;
+                margin-bottom: 0.5rem;
+                text-align: left !important;
+            }
+
+            div.dataTables_length select,
+            div.dataTables_filter input {
+                width: 100% !important;
+            }
+
+            .header h3,
+            .header p {
+                font-size: 1rem;
+                margin: 0.2rem 0;
+            }
+
+            #toggleCompleted {
+                margin: 0.5rem;
+                font-size: 0.8rem;
+                padding: 0.3rem 0.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-secondary">
+    <div class="header container-fluid text-center">
+        <h3>Wilds - Crown Tracker</h3>
+        <p>by SobaMiky</p>
+    </div>
+
+    <div class="container-fluid">
+        <button id="toggleCompleted" class="m-4 btn btn-primary">Mostra/Nascondi completati</button>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-dark" id="monsterTable">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Monster</th>
+                    <th>Progress</th>
+                    <th>Mini Crown</th>
+                    <th>Large Crown</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+
+    <!-- Modal Conferma -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmModalLabel">Conferma azione</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
+                </div>
+                <div class="modal-body"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-primary" id="confirmAction">Conferma</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.datatables.net/2.3.4/js/dataTables.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+
+    <script>
+        let monsters = JSON.parse(localStorage.getItem('monsters'));
+        if (!monsters || monsters.length === 0) {
+            monsters = [
+                { id: 1, name: 'Chatacabra', minicrown: 0, giantcrown: 0 },
+                { id: 2, name: 'Quematrice', minicrown: 0, giantcrown: 0 },
+                { id: 3, name: 'Lala Barina', minicrown: 0, giantcrown: 0 },
+                { id: 4, name: 'Congalala', minicrown: 0, giantcrown: 0 },
+                { id: 5, name: 'Balahara', minicrown: 0, giantcrown: 0 },
+                { id: 6, name: 'Doshaguma', minicrown: 0, giantcrown: 0 },
+                { id: 7, name: 'Uth Duna', minicrown: 0, giantcrown: 0 },
+                { id: 8, name: 'Rompopolo', minicrown: 0, giantcrown: 0 },
+                { id: 9, name: 'Rey Dau', minicrown: 0, giantcrown: 0 },
+                { id: 10, name: 'Nerscylla', minicrown: 0, giantcrown: 0 },
+                { id: 11, name: 'Hirabami', minicrown: 0, giantcrown: 0 },
+                { id: 12, name: 'Ajarakan', minicrown: 0, giantcrown: 0 },
+                { id: 13, name: 'Nu Udra', minicrown: 0, giantcrown: 0 },
+                { id: 14, name: 'Guardian Doshaguma', minicrown: 0, giantcrown: 0 },
+                { id: 15, name: 'Guardian Rathalos', minicrown: 0, giantcrown: 0 },
+                { id: 16, name: 'Jin Dahaad', minicrown: 0, giantcrown: 0 },
+                { id: 17, name: 'Guardian Ebony Odogaron', minicrown: 0, giantcrown: 0 },
+                { id: 18, name: 'Xu Wu', minicrown: 0, giantcrown: 0 },
+                { id: 19, name: 'Guardian Fulgur Anjanath', minicrown: 0, giantcrown: 0 },
+                { id: 20, name: 'Yian Kut-Ku', minicrown: 0, giantcrown: 0 },
+                { id: 21, name: 'Gypceros', minicrown: 0, giantcrown: 0 },
+                { id: 22, name: 'Rathian', minicrown: 0, giantcrown: 0 },
+                { id: 23, name: 'Rathalos', minicrown: 0, giantcrown: 0 },
+                { id: 24, name: 'Gravios', minicrown: 0, giantcrown: 0 },
+                { id: 25, name: 'Blangonga', minicrown: 0, giantcrown: 0 },
+                { id: 26, name: 'Mizutsune', minicrown: 0, giantcrown: 0 },
+                { id: 27, name: 'Gore Magala', minicrown: 0, giantcrown: 0 },
+                { id: 28, name: 'Lagiacrus', minicrown: 0, giantcrown: 0 },
+                { id: 29, name: 'Seregios', minicrown: 0, giantcrown: 0 },
+                { id: 30, name: 'Arkveld', minicrown: 0, giantcrown: 0 }
+            ];
+            localStorage.setItem('monsters', JSON.stringify(monsters));
+        }
+
+        $(document).ready(function () {
+            let selectedMonsterIndex = null;
+            let selectedCrownType = null;
+
+            function getProgressText(monster) {
+                const total = monster.minicrown + monster.giantcrown;
+                return total === 2 ? '100%' : total === 1 ? '50%' : '0%';
+            }
+
+            function buildTableRows() {
+                let html = '';
+                monsters.forEach(monster => {
+                    html += `
+                    <tr>
+                        <td><img src="./icons/${monster.name.toLowerCase().replace(/[^a-z0-9]/g, '')}.png" height="45" width="45"/></td>
+                        <td>${monster.name}</td>
+                        <td>${getProgressText(monster)}</td>
+                        <td class="text-center fw-bold ${monster.minicrown ? 'text-success' : 'text-danger'}">${monster.minicrown ? 'Mini Crown Obtained' : 'N/A'}</td>
+                        <td class="text-center fw-bold ${monster.giantcrown ? 'text-success' : 'text-danger'}">${monster.giantcrown ? 'Giant Crown Obtained' : 'N/A'}</td>
+                    </tr>
+                    `;
+                });
+                $('#tableBody').html(html);
+            }
+
+            buildTableRows();
+
+            let monsterTable = $('#monsterTable').DataTable({
+                responsive: true,
+                pageLength: 100,
+                lengthMenu: [50, 100, 200],
+                dom:
+                    "<'row mb-2'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                    "<'row'<'col-sm-12'tr>>" +
+                    "<'row mt-2'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
+            });
+
+            // Toggle completed
+            let showCompleted = true;
+            $('#toggleCompleted').click(function () {
+                if (showCompleted) {
+                    monsterTable.rows().every(function () {
+                        if ($(this.node()).find('td:eq(2)').text() === '100%') {
+                            $(this.node()).hide();
+                        }
+                    });
+                    showCompleted = false;
+                } else {
+                    monsterTable.rows().every(function () {
+                        $(this.node()).show();
+                    });
+                    showCompleted = true;
+                }
+            });
+
+            // Click su crown
+            $('#monsterTable tbody').on('click', 'td', function () {
+                const colIndex = monsterTable.cell(this).index().column;
+                if (colIndex === 3) selectedCrownType = 'minicrown';
+                else if (colIndex === 4) selectedCrownType = 'giantcrown';
+                else return;
+
+                selectedMonsterIndex = monsterTable.row(this).index();
+                const monster = monsters[selectedMonsterIndex];
+                const crownName = selectedCrownType === 'minicrown' ? 'mini corona' : 'grande corona';
+                const currentValue = monster[selectedCrownType];
+
+                const modalText = currentValue === 0
+                    ? `Confermi di aver ottenuto la <strong>${crownName}</strong> per <strong>${monster.name}</strong>?`
+                    : `Vuoi annullare la <strong>${crownName}</strong> per <strong>${monster.name}</strong>?`;
+
+                $('#confirmModal .modal-body').html(modalText);
+                new bootstrap.Modal(document.getElementById('confirmModal')).show();
+            });
+
+            // Conferma modal
+            $('#confirmAction').click(function () {
+                if (selectedMonsterIndex !== null && selectedCrownType) {
+                    monsters[selectedMonsterIndex][selectedCrownType] = monsters[selectedMonsterIndex][selectedCrownType] ? 0 : 1;
+                    localStorage.setItem('monsters', JSON.stringify(monsters));
+
+                    // Aggiorna solo le celle interessate
+                    const monster = monsters[selectedMonsterIndex];
+                    const crownText = monster[selectedCrownType] ? (selectedCrownType === 'minicrown' ? 'Mini Crown Obtained' : 'Giant Crown Obtained') : 'N/A';
+                    const crownClass = monster[selectedCrownType] ? 'text-success' : 'text-danger';
+
+                    monsterTable.cell(selectedMonsterIndex, selectedCrownType === 'minicrown' ? 3 : 4).data(`<span class="fw-bold ${crownClass}">${crownText}</span>`).draw(false);
+                    monsterTable.cell(selectedMonsterIndex, 2).data(getProgressText(monster)).draw(false);
+                }
+                bootstrap.Modal.getInstance(document.getElementById('confirmModal')).hide();
+                selectedMonsterIndex = null;
+                selectedCrownType = null;
+            });
+        });
+    </script>
+</body>
+
+</html>
