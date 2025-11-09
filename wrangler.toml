@@ -2,5 +2,5 @@ name = "monster-tracker"
 compatibility_date = "2025-11-09"
 
 [site]
-bucket = "./"   # qui metti la cartella con index.html e assets
+bucket = "./public"   # qui metti la cartella con index.html e assets
 entry-point = "workers-site"
