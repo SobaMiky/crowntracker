@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="shortcut icon" href="./icons/geli.ico" type="image/x-icon">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monster Hunter Wilds - Crown Tracker</title>
+</head>
+
+<body class="bg-secondary">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.3.4/css/dataTables.dataTables.css" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+        body {
+            font-family: "Roboto", sans-serif;
+        }
+
+        /* Transizione fluida e cursore */
+        #monsterTable tbody tr {
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        }
+
+        /* Hover con !important e maggiore specificità */
+        #monsterTable tbody tr:hover td {
+            background-color: hsla(210, 11%, 14%, 0.15) !important;
+        }
+    </style>
+    <div class="header container-fluid text-center">
+        <h3>Wilds - Crown Tracker</h3>
+        <p>by Soba</p>
+    </div>
+    <button id="toggleCompleted" class=" m-4 btn btn-primary">Mostra/Nascondi completati</button>
+    <table class="table table-dark" id="monsterTable">
+        <thead>
+            <th></th>
+            <th>Monster</th>
+            <th>Progress</th>
+            <th>Mini Crown</th>
+            <th>Large Crown</th>
+        </thead>
+        <tbody id="tableBody">
+
+        </tbody>
+    </table>
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmModalLabel">Conferma azione</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
+                </div>
+                <div class="modal-body">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="button" class="btn btn-primary" id="confirmAction">Conferma</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.datatables.net/2.3.4/js/dataTables.js"></script>
+
+
+
+    <script>
+        let monsters = JSON.parse(localStorage.getItem('monsters'));
+        if (!monsters || monsters.length === 0) {
+            monsters = [
+                { id: 1, name: 'Chatacabra', minicrown: 0, giantcrown: 0 },
+                { id: 2, name: 'Quematrice', minicrown: 0, giantcrown: 0 },
+                { id: 3, name: 'Lala Barina', minicrown: 0, giantcrown: 0 },
+                { id: 4, name: 'Congalala', minicrown: 0, giantcrown: 0 },
+                { id: 5, name: 'Balahara', minicrown: 0, giantcrown: 0 },
+                { id: 6, name: 'Doshaguma', minicrown: 0, giantcrown: 0 },
+                { id: 7, name: 'Uth Duna', minicrown: 0, giantcrown: 0 },
+                { id: 8, name: 'Rompopolo', minicrown: 0, giantcrown: 0 },
+                { id: 9, name: 'Rey Dau', minicrown: 0, giantcrown: 0 },
+                { id: 10, name: 'Nerscylla', minicrown: 0, giantcrown: 0 },
+                { id: 11, name: 'Hirabami', minicrown: 0, giantcrown: 0 },
+                { id: 12, name: 'Ajarakan', minicrown: 0, giantcrown: 0 },
+                { id: 13, name: 'Nu Udra', minicrown: 0, giantcrown: 0 },
+                { id: 14, name: 'Guardian Doshaguma', minicrown: 0, giantcrown: 0 },
+                { id: 15, name: 'Guardian Rathalos', minicrown: 0, giantcrown: 0 },
+                { id: 16, name: 'Jin Dahaad', minicrown: 0, giantcrown: 0 },
+                { id: 17, name: 'Guardian Ebony Odogaron', minicrown: 0, giantcrown: 0 },
+                { id: 18, name: 'Xu Wu', minicrown: 0, giantcrown: 0 },
+                { id: 19, name: 'Guardian Fulgur Anjanath', minicrown: 0, giantcrown: 0 },
+                { id: 20, name: 'Yian Kut-Ku', minicrown: 0, giantcrown: 0 },
+                { id: 21, name: 'Gypceros', minicrown: 0, giantcrown: 0 },
+                { id: 22, name: 'Rathian', minicrown: 0, giantcrown: 0 },
+                { id: 23, name: 'Rathalos', minicrown: 0, giantcrown: 0 },
+                { id: 24, name: 'Gravios', minicrown: 0, giantcrown: 0 },
+                { id: 25, name: 'Blangonga', minicrown: 0, giantcrown: 0 },
+                { id: 26, name: 'Mizutsune', minicrown: 0, giantcrown: 0 },
+                { id: 27, name: 'Gore Magala', minicrown: 0, giantcrown: 0 },
+                { id: 28, name: 'Lagiacrus', minicrown: 0, giantcrown: 0 },
+                { id: 29, name: 'Seregios', minicrown: 0, giantcrown: 0 },
+                { id: 30, name: 'Arkveld', minicrown: 0, giantcrown: 0 }
+            ];
+            ;
+            localStorage.setItem('monsters', JSON.stringify(monsters));
+        }
+
+        $(document).ready(function () {
+            buildTable(monsters);
+            var monsterTable = $('#monsterTable').DataTable({
+                pageLength: 50,
+                lengthMenu: [50, 100, 200]
+            });
+            var showCompleted = true;
+
+            $('#toggleCompleted').click(function () {
+                if (showCompleted) {
+                    monsterTable.rows().every(function () {
+                        var progress = $(this.node()).find('td:eq(2)').text();
+                        if (progress === '100%') {
+                            $(this.node()).hide();
+                        }
+                    });
+                    showCompleted = false;
+                } else {
+                    monsterTable.rows().every(function () {
+                        $(this.node()).show();
+                    });
+                    showCompleted = true;
+                }
+            });
+            $('#monsterTable tbody').on('click', 'td', function () {
+                let colIndex = monsterTable.cell(this).index().column;
+                if (colIndex === 3) { // Mini Crown
+                    selectedCrownType = 'minicrown';
+                } else if (colIndex === 4) { // Giant Crown
+                    selectedCrownType = 'giantcrown';
+                } else {
+                    return; // altre colonne ignorate
+                }
+
+                selectedMonsterIndex = monsterTable.row(this).index();
+                let monster = monsters[selectedMonsterIndex];
+                let crownName = selectedCrownType === 'minicrown' ? 'mini crown' : 'large crown';
+
+                // Determina testo in base allo stato corrente
+                let currentValue = monster[selectedCrownType];
+                let modalText = currentValue === 0
+                    ? `Confermi di aver ottenuto la <strong>${crownName}</strong> per <strong>${monster.name}?<strong>`
+                    : `Vuoi annullare la <strong>${crownName}</strong> per <strong>${monster.name}</strong>?`;
+
+                $('#confirmModal .modal-body').html(modalText);
+
+                var modal = new bootstrap.Modal(document.getElementById('confirmModal'));
+                modal.show();
+            });
+
+            // Conferma dal modal
+            $('#confirmAction').click(function () {
+                if (selectedMonsterIndex !== null && selectedCrownType) {
+                    // Switch stato
+                    monsters[selectedMonsterIndex][selectedCrownType] = monsters[selectedMonsterIndex][selectedCrownType] === 1 ? 0 : 1;
+
+                    // Aggiorna localStorage
+                    localStorage.setItem('monsters', JSON.stringify(monsters));
+
+                    // Aggiorna solo la tabella ricreando le righe
+                    monsterTable.clear().destroy();
+                    buildTable(monsters);
+                    monsterTable = $('#monsterTable').DataTable({ pageLength: 100 });
+                }
+
+                // Chiudi modal e reset variabili
+                bootstrap.Modal.getInstance(document.getElementById('confirmModal')).hide();
+                selectedMonsterIndex = null;
+                selectedCrownType = null;
+            });
+        })
+
+        function buildTable(datas) {
+
+            console.log(datas);
+            datas.forEach(function (mostro, indice) {
+                console.log(`${mostro['minicrown'] + mostro['giantcrown']}`);
+                $('#tableBody').html();
+                $('#tableBody').append(`
+                    <tr>
+                        <td><img height="45" width="45" src="./icons/${mostro['name'].toLowerCase().replace(/[^a-z0-9]/g, '')}.png"/></td>
+                        <td>${mostro['name']}</td>
+                        <td>${mostro['minicrown'] + mostro['giantcrown'] == 2 ? '100%' : mostro['minicrown'] + mostro['giantcrown'] == 1 ? '50%' : '0%'}</td>
+                        ${mostro['minicrown'] == 1 ? `<td class="text-center fw-bold text-success"> Mini Crown Obtained </td>` : `<td class="text-center fw-bold text-danger"> N/A </td>`}
+                        ${mostro['giantcrown'] == 1 ? `<td class="text-center fw-bold text-success"> Giant Crown Obtained </td>` : `<td class="text-center fw-bold text-danger"> N/A </td>`}
+                    </tr>
+                `);
+            })
+        }
+
+    </script>
+</body>
+
+</html>
